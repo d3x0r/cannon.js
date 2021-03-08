@@ -2,7 +2,8 @@ module.exports = ContactEquation;
 
 var Equation = require('./Equation');
 var Vec3 = require('../math/Vec3');
-var Mat3 = require('../math/Mat3');
+const config = require( "../config" );
+var Mat3 = config.useLnQuat?require('../math/lnMat3'):require('../math/Mat3');
 
 /**
  * Contact/non-penetration constraint equation

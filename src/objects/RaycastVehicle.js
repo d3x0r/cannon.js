@@ -1,6 +1,7 @@
 var Body = require('./Body');
 var Vec3 = require('../math/Vec3');
-var Quaternion = require('../math/Quaternion');
+const config = require( "../config" );
+const Quaternion = config.useLnQuat?require( '../math/lnQuaternion' ):require('../math/Quaternion');
 var RaycastResult = require('../collision/RaycastResult');
 var Ray = require('../collision/Ray');
 var WheelInfo = require('../objects/WheelInfo');

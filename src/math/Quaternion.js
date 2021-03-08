@@ -84,6 +84,8 @@ Quaternion.prototype.setFromAxisAngle = function(axis,angle){
     return this;
 };
 
+Quaternion.prototype.getQuat = function(){return this; }
+
 /**
  * Converts the quaternion to axis/angle representation.
  * @method toAxisAngle

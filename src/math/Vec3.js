@@ -1,6 +1,7 @@
 module.exports = Vec3;
 
-var Mat3 = require('./Mat3');
+const config = require( "../config" );
+var Mat3 = config.useLnQuat?require( "./lnMat3" ):require('./Mat3');
 
 /**
  * 3-dimensional vector

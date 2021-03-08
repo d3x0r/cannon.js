@@ -2,8 +2,9 @@ module.exports = Trimesh;
 
 var Shape = require('./Shape');
 var Vec3 = require('../math/Vec3');
-var Quaternion = require('../math/Quaternion');
-var Transform = require('../math/Transform');
+const config = require( "../config" );
+const Quaternion = config.useLnQuat?require( '../math/lnQuaternion' ):require('../math/Quaternion');
+const Transform = config.useLnQuat?require('../math/lnTransform'):require('../math/Transform');
 var AABB = require('../collision/AABB');
 var Octree = require('../utils/Octree');
 

@@ -1,4 +1,5 @@
 // Export classes
+const config=require( "./config" );
 module.exports = {
     version :                       require('../package.json').version,
 
@@ -23,7 +24,7 @@ module.exports = {
     Heightfield :                   require('./shapes/Heightfield'),
     HingeConstraint :               require('./constraints/HingeConstraint'),
     LockConstraint :                require('./constraints/LockConstraint'),
-    Mat3 :                          require('./math/Mat3'),
+    Mat3 :                          config.useLnQuat?require('./math/lnMat3'):require('./math/Mat3'),
     Material :                      require('./material/Material'),
     NaiveBroadphase :               require('./collision/NaiveBroadphase'),
     ObjectCollisionMatrix :         require('./collision/ObjectCollisionMatrix'),
@@ -31,7 +32,7 @@ module.exports = {
     Particle :                      require('./shapes/Particle'),
     Plane :                         require('./shapes/Plane'),
     PointToPointConstraint :        require('./constraints/PointToPointConstraint'),
-    Quaternion :                    require('./math/Quaternion'),
+    Quaternion :                    config.useLnQuat?require('./math/lnQuaternion'):require('./math/Quaternion'),
     Ray :                           require('./collision/Ray'),
     RaycastVehicle :                require('./objects/RaycastVehicle'),
     RaycastResult :                 require('./collision/RaycastResult'),
@@ -45,7 +46,7 @@ module.exports = {
     Sphere :                        require('./shapes/Sphere'),
     SplitSolver :                   require('./solver/SplitSolver'),
     Spring :                        require('./objects/Spring'),
-    Transform :                     require('./math/Transform'),
+    Transform :                     config.useLnQuat?require('./math/lnTransform'):require('./math/Transform'),
     Trimesh :                       require('./shapes/Trimesh'),
     Vec3 :                          require('./math/Vec3'),
     Vec3Pool :                      require('./utils/Vec3Pool'),

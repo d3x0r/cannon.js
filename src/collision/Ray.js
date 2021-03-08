@@ -1,8 +1,8 @@
 module.exports = Ray;
-
 var Vec3 = require('../math/Vec3');
-var Quaternion = require('../math/Quaternion');
-var Transform = require('../math/Transform');
+const config = require( "../config" );
+const Quaternion = config.useLnQuat?require( '../math/lnQuaternion' ):require('../math/Quaternion');
+const Transform = config.useLnQuat?require('../math/lnTransform'):require('../math/Transform');
 var ConvexPolyhedron = require('../shapes/ConvexPolyhedron');
 var Box = require('../shapes/Box');
 var RaycastResult = require('../collision/RaycastResult');
@@ -189,8 +189,10 @@ Ray.prototype.intersectBody = function (body, result) {
         }
 
         body.quaternion.mult(body.shapeOrientations[i], qi);
+console.log( "Raycasting:", body.quaternion, body.shapeOrientations[i], qi );
         body.quaternion.vmult(body.shapeOffsets[i], xi);
         xi.vadd(body.position, xi);
+console.log( "Raycasting:", qi, xi );
 
         this.intersectShape(
             shape,

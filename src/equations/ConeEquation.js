@@ -1,7 +1,8 @@
 module.exports = ConeEquation;
 
 var Vec3 = require('../math/Vec3');
-var Mat3 = require('../math/Mat3');
+const config = require( "../config" );
+const Mat3 = config.useLnQuat?require('../math/lnMat3'):require('../math/Mat3');
 var Equation = require('./Equation');
 
 /**

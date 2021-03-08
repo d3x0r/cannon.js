@@ -1,5 +1,6 @@
 var Vec3 = require('../math/Vec3');
-var Transform = require('../math/Transform');
+const config = require( "../config" );
+var Transform = config.useLnQuat?require('../math/lnTransform'):require('../math/Transform');
 var RaycastResult = require('../collision/RaycastResult');
 var Utils = require('../utils/Utils');
 

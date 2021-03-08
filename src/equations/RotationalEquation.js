@@ -1,7 +1,8 @@
 module.exports = RotationalEquation;
 
 var Vec3 = require('../math/Vec3');
-var Mat3 = require('../math/Mat3');
+const config = require( "../config" );
+var Mat3 = config.useLnQuat?require('../math/lnMat3'):require('../math/Mat3');
 var Equation = require('./Equation');
 
 /**

@@ -275,7 +275,7 @@ CANNON.Demo = function(options){
 
             visual.position.copy(bodyPos);
             if(b.quaternion){
-                visual.quaternion.copy(bodyQuat);
+                visual.quaternion.copy(bodyQuat.getQuat());
             }
         }
 
@@ -1134,7 +1134,7 @@ CANNON.Demo.prototype.shape2mesh = function(body){
         var o = body.shapeOffsets[l];
         var q = body.shapeOrientations[l];
         mesh.position.set(o.x, o.y, o.z);
-        mesh.quaternion.set(q.x, q.y, q.z, q.w);
+        mesh.quaternion.copy(q.getQuat());
 
         obj.add(mesh);
     }
