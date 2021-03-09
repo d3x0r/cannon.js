@@ -897,7 +897,6 @@ ConvexPolyhedron.project = function(hull, axis, pos, quat, result){
     Transform.vectorToLocalFrame(pos, quat, axis, localAxis);
     Transform.pointToLocalFrame(pos, quat, localOrigin, localOrigin);
     var add = localOrigin.dot(localAxis);
-console.log( "Transformed?", localAxis, localOrigin );
     min = max = vs[0].dot(localAxis);
 
     for(var i = 1; i < n; i++){
