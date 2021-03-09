@@ -231,7 +231,7 @@ lnQuaternion.prototype.mult = function(q,target){
 	
 
 	// q= quaternion to rotate; oct = octive to result with; ac/as cos/sin(rotation) ax/ay/az (normalized axis of rotation)
-	function finishRodrigues( target, q, oct, ax, ay, az, th ) {
+	function finishRodrigues( target, q, ax, ay, az, th ) {
 		const AdotB = (q.nx*ax + q.ny*ay + q.nz*az);
 	   
 		const xmy = (th - q.θ)/2; // X - Y  (x minus y)
@@ -289,14 +289,33 @@ lnQuaternion.prototype.mult = function(q,target){
 	}
     target = target || new lnQuaternion();
 
-	const ax_ = q.nx;
-	const ay_ = q.ny;
-	const az_ = q.nz;
+	const ax_ = this.nx;
+	const ay_ = this.ny;
+	const az_ = this.nz;
 	if( q.θ ) {
 		// else it's unchanged
-		return finishRodrigues( target, this, 0, ax, ay, az, q.θ );
+        t( target );
+		return finishRodrigues( target, q, ax_, ay_, az_, this.θ );
+	}else {
+        target.x = q.x
+        target.y = q.y
+        target.z = q.z
+        target.nx = q.nx
+        target.ny = q.ny
+        target.nz = q.nz
+        target.θ = q.θ
+    }
+/*
+	const ax_ = this.nx;
+	const ay_ = this.ny;
+	const az_ = this.nz;
+	if( q.θ ) {
+		// else it's unchanged
+        t( target );
+		return finishRodrigues( target, q, ax_, ay_, az_, this.θ );
 	}
-t( target );
+*/
+    t( target );
 	return target;
 
 
@@ -475,7 +494,7 @@ lnQuaternion.prototype.vmult = function(v,target){
  * @return {lnQuaternion} this
  */
 lnQuaternion.prototype.copy = function(source){
-	this.θ = source.θ;
+    this.θ = source.θ;
     this.nx = source.nx;
     this.ny = source.ny;
     this.nz = source.nz;
@@ -599,7 +618,7 @@ lnQuaternion.prototype.setFromEuler = function ( x, y, z, order ) {
 	this.x = this.nx * this.θ;
 	this.y = this.ny * this.θ;
 	this.z = this.nz * this.θ;
-t(target )
+t(this )
     return this;
 };
 

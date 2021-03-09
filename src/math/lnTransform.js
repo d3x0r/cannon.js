@@ -1,5 +1,5 @@
 var Vec3 = require('./Vec3');
-var Quaternion = require('./Quaternion');
+var Quaternion = require('./lnQuaternion');
 
 module.exports = Transform;
 

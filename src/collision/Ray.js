@@ -180,7 +180,6 @@ Ray.prototype.intersectBody = function (body, result) {
 
     var xi = intersectBody_xi;
     var qi = intersectBody_qi;
-
     for (var i = 0, N = body.shapes.length; i < N; i++) {
         var shape = body.shapes[i];
 
@@ -189,10 +188,8 @@ Ray.prototype.intersectBody = function (body, result) {
         }
 
         body.quaternion.mult(body.shapeOrientations[i], qi);
-console.log( "Raycasting:", body.quaternion, body.shapeOrientations[i], qi );
         body.quaternion.vmult(body.shapeOffsets[i], xi);
         xi.vadd(body.position, xi);
-console.log( "Raycasting:", qi, xi );
 
         this.intersectShape(
             shape,

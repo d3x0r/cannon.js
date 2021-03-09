@@ -608,7 +608,6 @@ Body.prototype.addShape = function(shape, _offset, _orientation){
     this.shapeOrientations.push(orientation);
     this.updateMassProperties();
     this.updateBoundingRadius();
-
     this.aabbNeedsUpdate = true;
 
     shape.body = this;

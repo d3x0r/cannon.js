@@ -1,6 +1,6 @@
 
 
 module.exports = {
-	useLnQuat : false,
+	useLnQuat : true,
 }
 Object.freeze( exports );
