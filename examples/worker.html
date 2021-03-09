@@ -34,7 +34,7 @@
 		const module = {exports:{}};
 		let require=null;
 	</script>
-    <script src="../src/math/lnQuaternion.js"></script>
+    <script src="../build/cannon.js"></script>
     <script src="../libs/Three.js"></script>
     <script src="../libs/Detector.js"></script>
     <script src="../libs/TrackballControls.js"></script>
@@ -115,7 +115,7 @@
         worker.postMessage = worker.webkitPostMessage || worker.postMessage;
 
         var sendTime; // Time when we sent last message
-			const tmpQuat = new lnQuaternion();
+			const tmpQuat = new CANNON.Quaternion();
         worker.onmessage = function(e) {
 
             // Get fresh data from the worker
