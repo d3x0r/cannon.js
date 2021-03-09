@@ -1,4 +1,4 @@
-// Tue, 09 Mar 2021 03:21:35 GMT
+// Tue, 09 Mar 2021 16:35:42 GMT
 
 /*
  * Copyright (c) 2015 cannon.js Authors
@@ -5848,6 +5848,9 @@ Mat3.prototype.transpose = function( target ) {
 module.exports = lnQuaternion;
 
 var Vec3 = _dereq_('./Vec3');
+//var Vec3 = require?require('./Vec3'):function() {
+//	this.x = this.y=this.z = 0;
+//};
 
 // 'fixed' acos for inputs > 1
 function acos(x) {
@@ -5857,13 +5860,6 @@ function acos(x) {
 	function plusminus(x){ return mod_( x+1,2)-1 };
 	function trunc(x,y){ return x-mod_(x,y) };
 	return Math.acos(plusminus(x)) - trunc(x+1,2)*Math.PI/2;
-}
-
-function t(q) {
-	if( isNaN( q.nx ) || isNaN( q.ny ) || isNaN( q.nz ) )
-		throw new Error( "FAIL" );
-//	if( isNaN( q.x ) || isNaN( q.y ) || isNaN( q.z ) )
-//		throw new Error( "FAIL" );
 }
 
 /**
@@ -5930,7 +5926,6 @@ lnQuaternion.prototype.set = function(x,y,z){
 		this.ny = 1;
 		this.nz = 0;
 	}
-t( this );
     return this;
 };
 
@@ -5982,16 +5977,8 @@ lnQuaternion.prototype.setFromAxisAngle = function(axis,angle){
 	this.x = axis.x * angle;
 	this.y = axis.y * angle;
 	this.z = axis.z * angle;
-t( this );
 
 	return this;
-
-    var s = Math.sin(angle*0.5);
-    this.x = axis.x * s;
-    this.y = axis.y * s;
-    this.z = axis.z * s;
-    this.w = Math.cos(angle*0.5);
-    return this;
 };
 
 /**
@@ -6052,7 +6039,6 @@ lnQuaternion.prototype.setFromVectors = function(u,v){
 		this.x = this.nx * this.θ;
 		this.y = this.ny * this.θ;
 		this.z = this.nz * this.θ;
-t( this );
 		return this;
 
         this.x = a.x;
@@ -6131,18 +6117,12 @@ lnQuaternion.prototype.mult = function(q,target){
 				target.z = target.nz * (target.θ);
 			}
 		}
-        t( target );
 		return target;
 	}
     target = target || new lnQuaternion();
 
-	const ax_ = this.nx;
-	const ay_ = this.ny;
-	const az_ = this.nz;
 	if( q.θ ) {
-		// else it's unchanged
-        t( target );
-		return finishRodrigues( target, q, ax_, ay_, az_, this.θ );
+		return finishRodrigues( target, q, this.nx, this.ny, this.nz, this.θ );
 	}else {
         target.x = this.x
         target.y = this.y
@@ -6152,32 +6132,7 @@ lnQuaternion.prototype.mult = function(q,target){
         target.nz = this.nz
         target.θ = this.θ
     }
-/*
-	const ax_ = this.nx;
-	const ay_ = this.ny;
-	const az_ = this.nz;
-	if( q.θ ) {
-		// else it's unchanged
-        t( target );
-		return finishRodrigues( target, q, ax_, ay_, az_, this.θ );
-	}
-*/
-    t( target );
 	return target;
-
-
-
-    target = target || new lnQuaternion();
-
-    var ax = this.x, ay = this.y, az = this.z, aw = this.w,
-        bx = q.x, by = q.y, bz = q.z, bw = q.w;
-
-    target.x = ax * bw + aw * bx + ay * bz - az * by;
-    target.y = ay * bw + aw * by + az * bx - ax * bz;
-    target.z = az * bw + aw * bz + ax * by - ay * bx;
-    target.w = aw * bw - ax * bx - ay * by - az * bz;
-
-    return target;
 };
 
 /**
@@ -6217,17 +6172,7 @@ lnQuaternion.prototype.conjugate = function(target){
 	target.y = this.ny * this.θ;
 	target.z = this.nz * this.θ;
 	target.θ = this.θ;
-t( target );
 	return target;
-
-    target = target || new lnQuaternion();
-
-    target.x = -this.x;
-    target.y = -this.y;
-    target.z = -this.z;
-    target.w = this.w;
-
-    return target;
 };
 
 /**
@@ -6236,11 +6181,12 @@ t( target );
  */
 lnQuaternion.prototype.normalize = function(){
 	// this should normalize the angle...
+    /*
 	this.θ %= Math.PI*2;
 	this.x = this.nx * this.θ;
 	this.y = this.ny * this.θ;
 	this.z = this.nz * this.θ;
-t(this)
+    */
 	return this;
 
     var l = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z+this.w*this.w);
@@ -6296,7 +6242,6 @@ lnQuaternion.prototype.vmult = function(v,target){
         y = v.y,
         z = v.z;
 
-
 		const nst = Math.sin(this.θ/2); // normal * sin_theta
 		const qw = Math.cos(this.θ/2);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
 
@@ -6314,24 +6259,6 @@ lnQuaternion.prototype.vmult = function(v,target){
 
 		return target;	
 
-{
-    const qx = this.x,
-        qy = this.y,
-        qz = this.z,
-        qw = this.w;
-
-    // q*v
-    const ix =  qw * x + qy * z - qz * y,
-    iy =  qw * y + qz * x - qx * z,
-    iz =  qw * z + qx * y - qy * x,
-    iw = -qx * x - qy * y - qz * z;
-
-    target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-    target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-    target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-
-    return target;
-}
 };
 
 /**
@@ -6348,7 +6275,6 @@ lnQuaternion.prototype.copy = function(source){
     this.x = source.x;
     this.y = source.y;
     this.z = source.z;
-t(this);
     return this;
 };
 
@@ -6465,7 +6391,6 @@ lnQuaternion.prototype.setFromEuler = function ( x, y, z, order ) {
 	this.x = this.nx * this.θ;
 	this.y = this.ny * this.θ;
 	this.z = this.nz * this.θ;
-t(this )
     return this;
 };
 
@@ -6482,7 +6407,6 @@ lnQuaternion.prototype.clone = function(){
 	result.x = this.x;
 	result.y = this.y;
 	result.z = this.z;
-t(target )
     return result;
 };
 
@@ -6511,53 +6435,7 @@ lnQuaternion.prototype.slerp = function (toQuat, dt, target) {
 		target.ny = 1;
 		target.nz = 0;
 	}
-t(target )
 	return target;
-
-    var ax = this.x,
-        ay = this.y,
-        az = this.z,
-        aw = this.w,
-        bx = toQuat.x,
-        by = toQuat.y,
-        bz = toQuat.z,
-        bw = toQuat.w;
-
-    var omega, cosom, sinom, scale0, scale1;
-
-    // calc cosine
-    cosom = ax * bx + ay * by + az * bz + aw * bw;
-
-    // adjust signs (if necessary)
-    if ( cosom < 0.0 ) {
-        cosom = -cosom;
-        bx = - bx;
-        by = - by;
-        bz = - bz;
-        bw = - bw;
-    }
-
-    // calculate coefficients
-    if ( (1.0 - cosom) > 0.000001 ) {
-        // standard case (slerp)
-        omega  = Math.acos(cosom);
-        sinom  = Math.sin(omega);
-        scale0 = Math.sin((1.0 - t) * omega) / sinom;
-        scale1 = Math.sin(t * omega) / sinom;
-    } else {
-        // "from" and "to" quaternions are very close
-        //  ... so we can do a linear interpolation
-        scale0 = 1.0 - t;
-        scale1 = t;
-    }
-
-    // calculate final values
-    target.x = scale0 * ax + scale1 * bx;
-    target.y = scale0 * ay + scale1 * by;
-    target.z = scale0 * az + scale1 * bz;
-    target.w = scale0 * aw + scale1 * bw;
-
-    return target;
 };
 
 /**
@@ -6580,27 +6458,14 @@ lnQuaternion.prototype.integrate = function(angularVelocity, dt, angularFactor, 
 		target.nx = target.x / target.θ;
 		target.ny = target.y / target.θ;
 		target.nz = target.z / target.θ;
+	}else {
+		target.nx = 0;
+		target.ny = 1;
+		target.nz = 0;
 	}
-t(target )
-    return target;
-
-    var ax = angularVelocity.x * angularFactor.x,
-        ay = angularVelocity.y * angularFactor.y,
-        az = angularVelocity.z * angularFactor.z,
-        bx = this.x,
-        by = this.y,
-        bz = this.z,
-        bw = this.w;
-
-    var half_dt = dt * 0.5;
-
-    target.x += half_dt * (ax * bw + ay * bz - az * by);
-    target.y += half_dt * (ay * bw + az * bx - ax * bz);
-    target.z += half_dt * (az * bw + ax * by - ay * bx);
-    target.w += half_dt * (- ax * bx - ay * by - az * bz);
-
     return target;
 };
+
 },{"./Vec3":32}],35:[function(_dereq_,module,exports){
 var Vec3 = _dereq_('./Vec3');
 var Quaternion = _dereq_('./lnQuaternion');
@@ -7623,7 +7488,7 @@ Body.prototype.integrate = function(dt, quatNormalize, quatNormalizeFast){
     pos.z += (tmpVel.z + velo.z) * 0.5 * dt;
 
     quat.integrate(this.angularVelocity, dt, this.angularFactor, quat);
-
+         if(0)
     if(quatNormalize){
         if(quatNormalizeFast){
             quat.normalizeFast();
