@@ -215,9 +215,12 @@ var lnQuaternion_mult_vb = new Vec3();
 var lnQuaternion_mult_vaxvb = new Vec3();
 lnQuaternion.prototype.mult = function(q,target){
 	
-
 	// q= quaternion to rotate; oct = octive to result with; ac/as cos/sin(rotation) ax/ay/az (normalized axis of rotation)
-	function finishRodrigues( target, q, ax, ay, az, th ) {
+    target = target || new lnQuaternion();
+
+	if( q.θ ) {
+		const ax = this.nx, ay = this.ny, az = this.nz, th = this.θ;
+
 		const AdotB = (q.nx*ax + q.ny*ay + q.nz*az);
 	   
 		const xmy = (th - q.θ)/2; // X - Y  (x minus y)
@@ -271,11 +274,6 @@ lnQuaternion.prototype.mult = function(q,target){
 			}
 		}
 		return target;
-	}
-    target = target || new lnQuaternion();
-
-	if( q.θ ) {
-		return finishRodrigues( target, q, this.nx, this.ny, this.nz, this.θ );
 	}else {
         target.x = this.x
         target.y = this.y
@@ -403,9 +401,9 @@ lnQuaternion.prototype.vmult = function(v,target){
 		const qz = this.nz*nst;
 
 		//p┬Æ = (v*v.dot(p) + v.cross(p)*(w))*2 + p*(w*w ┬û v.dot(v))
-		const tx = 2 * (qy * v.z - qz * v.y); // v.cross(p)*w*2
-		const ty = 2 * (qz * v.x - qx * v.z);
-		const tz = 2 * (qx * v.y - qy * v.x);
+		const tx = 2 * (qy * z - qz * y); // v.cross(p)*w*2
+		const ty = 2 * (qz * x - qx * z);
+		const tz = 2 * (qx * y - qy * x);
 		target.x = x + qw * tx + ( qy * tz - ty * qz );
 		target.y = y + qw * ty + ( qz * tx - tz * qx );
 		target.z = z + qw * tz + ( qx * ty - tx * qy );
