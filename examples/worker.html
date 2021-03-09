@@ -30,6 +30,11 @@
     <div id="info">
         <a href="http://github.com/schteppe/cannon.js">Cannon.js</a> web worker example
     </div>
+    <script >
+		const module = {exports:{}};
+		let require=null;
+	</script>
+    <script src="../src/math/lnQuaternion.js"></script>
     <script src="../libs/Three.js"></script>
     <script src="../libs/Detector.js"></script>
     <script src="../libs/TrackballControls.js"></script>
@@ -110,6 +115,7 @@
         worker.postMessage = worker.webkitPostMessage || worker.postMessage;
 
         var sendTime; // Time when we sent last message
+			const tmpQuat = new lnQuaternion();
         worker.onmessage = function(e) {
 
             // Get fresh data from the worker
@@ -121,10 +127,11 @@
                 meshes[i].position.set( positions[3*i+0],
                                         positions[3*i+1],
                                         positions[3*i+2] );
-                meshes[i].quaternion.set(quaternions[4*i+0],
+					
+                meshes[i].quaternion.copy(tmpQuat.set(quaternions[4*i+0],
                                          quaternions[4*i+1],
                                          quaternions[4*i+2],
-                                         quaternions[4*i+3]);
+                                         quaternions[4*i+3] ).getQuat());
             }
 
             // If the worker was faster than the time step (dt seconds), we want to delay the next timestep
