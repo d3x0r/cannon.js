@@ -1,6 +1,9 @@
 module.exports = lnQuaternion;
 
 var Vec3 = require('./Vec3');
+//var Vec3 = require?require('./Vec3'):function() {
+//	this.x = this.y=this.z = 0;
+//};
 
 // 'fixed' acos for inputs > 1
 function acos(x) {
@@ -331,10 +334,12 @@ lnQuaternion.prototype.conjugate = function(target){
  */
 lnQuaternion.prototype.normalize = function(){
 	// this should normalize the angle...
+    /*
 	this.θ %= Math.PI*2;
 	this.x = this.nx * this.θ;
 	this.y = this.ny * this.θ;
 	this.z = this.nz * this.θ;
+    */
 	return this;
 
     var l = Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z+this.w*this.w);
