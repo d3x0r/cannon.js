@@ -1,6 +1,8 @@
+const config = require( "../src/config" )
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 var AABB = require('../src/collision/AABB');
 var Vec3 = require('../src/math/Vec3');
-var Transform = require('../src/math/Transform');
+var Transform = config.useLnQuat?require( '../src/math/lnTransform'):require('../src/math/Transform');
 
 module.exports = {
     construct: function(test){

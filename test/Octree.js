@@ -1,7 +1,8 @@
+const config = require( "../src/config" )
 var Octree = require('../src/utils/Octree');
 var AABB = require('../src/collision/AABB');
 var Vec3 = require('../src/math/Vec3');
-var Transform = require('../src/math/Transform');
+var Transform = config.useLnQuat?require( '../src/math/lnTransform'):require('../src/math/Transform');
 
 module.exports = {
     construct: function(test){

@@ -1,5 +1,6 @@
+const config = require( "../src/config" )
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 var Vec3 =       require("../src/math/Vec3")
-,   Quaternion = require("../src/math/Quaternion")
 ,   Box =        require('../src/shapes/Box')
 
 module.exports = {

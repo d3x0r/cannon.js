@@ -1,6 +1,6 @@
 var Vec3 = require("../src/math/Vec3");
-var Quaternion = require("../src/math/Quaternion");
-var Box = require('../src/shapes/Box');
+const config = require( "../src/config" )
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 var Heightfield = require('../src/shapes/heightfield');
 var Narrowphase = require('../src/world/Narrowphase');
 var Sphere = require('../src/shapes/Sphere');
@@ -57,7 +57,6 @@ module.exports = {
             new Body(1, sphereShape),
             new Body(1, hfShape)
         );
-
         test.equal(result.length, 1);
 
         test.done();

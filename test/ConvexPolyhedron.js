@@ -1,5 +1,6 @@
-var Vec3 =     require("../src/math/Vec3")
-,   Quaternion = require("../src/math/Quaternion")
+const Vec3 =     require("../src/math/Vec3")
+,   config = require( "../src/config" )
+,   Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 ,   Box =      require('../src/shapes/Box')
 ,   ConvexPolyhedron =      require('../src/shapes/ConvexPolyhedron')
 

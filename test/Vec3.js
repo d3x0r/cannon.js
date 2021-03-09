@@ -1,6 +1,7 @@
+const config = require( "../src/config" )
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 var Vec3 =     require("../src/math/Vec3")
-,   Mat3 =     require("../src/math/Mat3")
-,   Quaternion = require("../src/math/Quaternion")
+,   Mat3 =     config.useLnQuat?require( '../src/math/lnMat3'):require("../src/math/Mat3")
 
 module.exports = {
     creation : function(test) {

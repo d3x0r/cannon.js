@@ -1,6 +1,7 @@
 var Vec3 = require("../src/math/Vec3");
-var Mat3 = require("../src/math/Mat3");
-var Quaternion = require("../src/math/Quaternion");
+const config = require( "../src/config.js" );
+const Mat3 = config.useLnQuat?require('../src/math/lnMat3'):require('../src/math/Mat3');
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion');
 var Box = require('../src/shapes/Box');
 var Sphere = require('../src/shapes/Sphere');
 var Trimesh = require('../src/shapes/Trimesh');
@@ -201,7 +202,6 @@ module.exports = {
         test.equals(result.hasHit, true);
         test.ok(result.hitPointWorld.almostEquals(new Vec3(0,0,0)));
         test.equal(result.distance, 5);
-
         result.reset();
         var body2 = new Body({ mass: 1 });
         body2.addShape(shape, new Vec3(0, 0, 1), new Quaternion());

@@ -1,5 +1,6 @@
 var Vec3 = require("../src/math/Vec3");
-var Quaternion = require("../src/math/Quaternion");
+const config = require( "../src/config" )
+const Quaternion = config.useLnQuat?require( '../src/math/lnQuaternion' ):require('../src/math/Quaternion')
 var Box = require('../src/shapes/Box');
 var Plane = require('../src/shapes/Plane');
 var Body = require('../src/objects/Body');
