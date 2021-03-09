@@ -297,13 +297,13 @@ lnQuaternion.prototype.mult = function(q,target){
         t( target );
 		return finishRodrigues( target, q, ax_, ay_, az_, this.θ );
 	}else {
-        target.x = q.x
-        target.y = q.y
-        target.z = q.z
-        target.nx = q.nx
-        target.ny = q.ny
-        target.nz = q.nz
-        target.θ = q.θ
+        target.x = this.x
+        target.y = this.y
+        target.z = this.z
+        target.nx = this.nx
+        target.ny = this.ny
+        target.nz = this.nz
+        target.θ = this.θ
     }
 /*
 	const ax_ = this.nx;
