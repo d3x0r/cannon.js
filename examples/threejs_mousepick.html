@@ -184,7 +184,7 @@
             gplane.position.copy(point);
 
             // Make it face toward the camera
-            gplane.quaternion.copy(camera.quaternion);
+            gplane.quaternion.copy(camera.quaternion.getQuat());
         }
 
         function onMouseUp(e) {
@@ -254,7 +254,7 @@
             world.step(dt);
             for(var i=0; i !== meshes.length; i++){
                 meshes[i].position.copy(bodies[i].position);
-                meshes[i].quaternion.copy(bodies[i].quaternion);
+                meshes[i].quaternion.copy(bodies[i].quaternion.getQuat());
             }
         }
 
