@@ -364,11 +364,12 @@
             var ballGeometry = new THREE.SphereGeometry(ballShape.radius);
             var shootDirection = new THREE.Vector3();
             var shootVelo = 15;
-            var projector = new THREE.Projector();
+            //var projector = new THREE.Projector();
+				//var caster = new THREE.Raycaster();
             function getShootDir(targetVec){
                 var vector = targetVec;
                 targetVec.set(0,0,1);
-                projector.unprojectVector(vector, camera);
+                vector.unproject( camera);
                 var ray = new THREE.Ray(sphereBody.position, vector.sub(sphereBody.position).normalize() );
                 targetVec.x = ray.direction.x;
                 targetVec.y = ray.direction.y;

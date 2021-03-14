@@ -25,14 +25,14 @@
 
         var constraintDown = false;
         var camera, scene, renderer, gplane=false, clickMarker=false;
-        var geometry, material, mesh;
+        var geometry, material, mesh, raycaster;
         var controls,time = Date.now();
 
         var jointBody, constrainedBody, mouseConstraint;
 
         var N = 1;
 
-        var container, camera, scene, renderer, projector;
+        var container, camera, scene, renderer;
 
         // To be synced
         var meshes=[], bodies=[];
@@ -46,7 +46,7 @@
 
         function init() {
 
-            projector = new THREE.Projector();
+				raycaster = new THREE.Raycaster();
 
             container = document.createElement( 'div' );
             document.body.appendChild( container );
@@ -184,7 +184,7 @@
             gplane.position.copy(point);
 
             // Make it face toward the camera
-            gplane.quaternion.copy(camera.quaternion.getQuat());
+            gplane.quaternion.copy(camera.quaternion);
         }
 
         function onMouseUp(e) {
@@ -212,11 +212,21 @@
         }
         function findNearestIntersectingObject(clientX,clientY,camera,objects) {
             // Get the picking ray from the point
-            var raycaster = getRayCasterFromScreenCoord(clientX, clientY, camera, projector);
+
+            var mouse3D = new THREE.Vector3();
+            // Get 3D point form the client x y
+            mouse3D.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse3D.y = -(clientY / window.innerHeight) * 2 + 1;
+            mouse3D.z = 0.5;
+				mouse3D.unproject(camera);
+				raycaster.set( camera.position, mouse3D.sub( camera.position ).normalize() );
+				var hits = raycaster.intersectObjects( objects );
+
+            //var hits = getRayCasterFromScreenCoord(clientX, clientY, camera, raycaster);
 
             // Find the closest intersecting object
             // Now, cast the ray all render objects in the scene to see if they collide. Take the closest one.
-            var hits = raycaster.intersectObjects(objects);
+            //var hits = raycaster.intersectObjects(objects);
             var closest = false;
             if (hits.length > 0) {
                 closest = hits[0];
@@ -227,13 +237,15 @@
 
         // Function that returns a raycaster to use to find intersecting objects
         // in a scene given screen pos and a camera, and a projector
-        function getRayCasterFromScreenCoord (screenX, screenY, camera, projector) {
+        function getRayCasterFromScreenCoord (screenX, screenY, camera, raycaster) {
             var mouse3D = new THREE.Vector3();
             // Get 3D point form the client x y
             mouse3D.x = (screenX / window.innerWidth) * 2 - 1;
             mouse3D.y = -(screenY / window.innerHeight) * 2 + 1;
             mouse3D.z = 0.5;
-            return projector.pickingRay(mouse3D, camera);
+				mouse3D.unproject(camera);
+				raycaster.set( camera.position, mouse3D.sub( camera.position ).normalize() );
+				return raycaster.intersectObjects( );
         }
 
         function onWindowResize() {
