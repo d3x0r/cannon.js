@@ -48,11 +48,12 @@
             var clothFunction = plane(restDistance * Nx, restDistance * Ny);
 
             function plane(width, height) {
-                return function(u, v) {
-                    var x = (u-0.5) * width;
-                    var y = (v+0.5) * height;
-                    var z = 0;
-                    return new THREE.Vector3(x, y, z);
+                return function(u, v, out) {
+                    out.x = (u-0.5) * width;
+                    out.y = (v+0.5) * height;
+                    out.z = 0;
+                    //return new THREE.Vector3(x, y, z);
+						return out;
                 };
             }
 
@@ -106,7 +107,7 @@
                     particles.push([]);
                     for ( var j = 0, jl = Ny+1; j !== jl; j++ ) {
                         var idx = j*(Nx+1) + i;
-                        var p = clothFunction(i/(Nx+1), j/(Ny+1));
+                        var p = clothFunction(i/(Nx+1), j/(Ny+1),new THREE.Vector3());
                         var particle = new CANNON.Body({
                             mass: j==Ny ? 0 : mass
                         });
