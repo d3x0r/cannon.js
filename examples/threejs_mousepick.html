@@ -30,7 +30,7 @@
 
         var jointBody, constrainedBody, mouseConstraint;
 
-        var N = 1;
+        var N = 10;
 
         var container, camera, scene, renderer;
 
@@ -289,7 +289,7 @@
             for(var i=0; i<N; i++){
                 boxBody = new CANNON.Body({ mass: mass });
                 boxBody.addShape(boxShape);
-                boxBody.position.set(0,5,0);
+                boxBody.position.set(0,5*i,0);
                 world.addBody(boxBody);
                 bodies.push(boxBody);
             }
