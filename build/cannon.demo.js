@@ -349,6 +349,7 @@ CANNON.Demo = function(options){
                     continue;
                 }
                 var n = c.equations.normal;
+		if( n ) {
                 var bi=n.bi, bj=n.bj, relLine1 = p2pConstraintMeshCache.request(), relLine2 = p2pConstraintMeshCache.request(), diffLine = p2pConstraintMeshCache.request();
                 var i=bi.id, j=bj.id;
 
@@ -361,6 +362,7 @@ CANNON.Demo = function(options){
                 relLine1.position.copy(bi.position);
                 relLine2.position.copy(bj.position);
                 n.bj.position.vadd(n.rj,diffLine.position);
+		}
             }
         }
         p2pConstraintMeshCache.hideCached();
