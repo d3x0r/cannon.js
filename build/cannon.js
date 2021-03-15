@@ -1,4 +1,4 @@
-// Sun, 14 Mar 2021 05:24:23 GMT
+// Mon, 15 Mar 2021 11:02:48 GMT
 
 /*
  * Copyright (c) 2015 cannon.js Authors
@@ -3217,6 +3217,17 @@ ContactEquation.prototype.computeB = function(h){
     GB.spatial.copy(n);
     GB.rotational.copy(rjxn);
 
+/*
+if( bi.shapes[0].type == 4 && (bj.shapes[0].type == 1 ) ){
+const len2= ( GA.rotational.x * GA.rotational.x + GA.rotational.y* GA.rotational.y+GA.rotational.z*GA.rotational.z) ;
+if( len2 > 0.45 ) console.log( "rotationalA...", len2, GA, n );
+}
+if( bj.shapes[0].type == 1 ){
+const len23= ( GB.rotational.x * GB.rotational.x + GB.rotational.y* GB.rotational.y+GB.rotational.z*GB.rotational.z) ;
+if( len23 > 45 ) console.log( "rotationalB..", len23, GB, n );
+}
+*/
+
     // Calculate the penetration vector
     penetrationVec.copy(bj.position);
     penetrationVec.vadd(rj,penetrationVec);
@@ -3517,6 +3528,15 @@ Equation.prototype.addToWlambda = function(deltalambda){
 
     bj.invInertiaWorldSolve.vmult(GB.rotational,temp);
     bj.wlambda.addScaledVector(deltalambda, temp, bj.wlambda);
+
+/*
+  // this is the sort of addition that happens on a plane collision...
+const len2= ( bj.wlambda.x * bj.wlambda.x + bj.wlambda.y* bj.wlambda.y+bj.wlambda.z*bj.wlambda.z) ;
+if( len2 > 450 ) console.log( "big integrate...", len2 );
+const len23= ( bi.wlambda.x * bi.wlambda.x + bi.wlambda.y* bi.wlambda.y+bi.wlambda.z*bi.wlambda.z) ;
+if( len23 > 450 ) console.log( "big integrate...", len23 );
+*/
+
 };
 
 /**
@@ -6234,14 +6254,15 @@ function zz() {
  * @param {Vec3} target Optional
  * @return {Vec3}
  */
-lnQuaternion.prototype.vmult = function(v,target){
+lnQuaternion.prototype.vmult = function(v,target, dt){
+	dt = dt||1
     target = target || new Vec3();
     var x = v.x,
         y = v.y,
         z = v.z;
 
-		const nst = Math.sin(this.θ/2); // normal * sin_theta
-		const qw = Math.cos(this.θ/2);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
+		const nst = Math.sin(this.θ/2*dt); // normal * sin_theta
+		const qw = Math.cos(this.θ/2*dt);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
 
 		const qx = this.nx*nst;
 		const qy = this.ny*nst;
@@ -6447,9 +6468,19 @@ lnQuaternion.prototype.slerp = function (toQuat, dt, target) {
 lnQuaternion.prototype.integrate = function(angularVelocity, dt, angularFactor, target){
     target = target || new lnQuaternion();
 
-    target.x = this.x + angularVelocity.x * dt * angularFactor.x;
-    target.y = this.y + angularVelocity.y * dt * angularFactor.y;
-    target.z = this.z + angularVelocity.z * dt * angularFactor.z;
+const thisx = this.x;
+const thisy = this.y;
+const thisz = this.z;
+
+    target.x = angularVelocity.x * dt*angularFactor.x;
+    target.y = angularVelocity.y * dt*angularFactor.y;
+    target.z = angularVelocity.z * dt*angularFactor.z;
+
+	this.vmult( target, target, -0.5 );
+
+	target.x += thisx;
+	target.y += thisy;
+	target.z += thisz;
 
 	target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
 
@@ -7473,6 +7504,9 @@ Body.prototype.integrate = function(dt, quatNormalize, quatNormalizeFast){
         invInertia = this.invInertiaWorld,
         linearFactor = this.linearFactor;
 
+//const len2= ( angularVelo.x * angularVelo.x + angularVelo.y* angularVelo.y+angularVelo.z*angularVelo.z) ;
+//if( len2 > 150 ) console.log( "big integrate...", len2, angularVelo );
+
     var iMdt = invMass * dt;
     tmpVel.copy( velo );
     velo.x += force.x * iMdt * linearFactor.x;
@@ -7487,6 +7521,7 @@ Body.prototype.integrate = function(dt, quatNormalize, quatNormalizeFast){
     angularVelo.x += dt * (e[0] * tx + e[1] * ty + e[2] * tz);
     angularVelo.y += dt * (e[3] * tx + e[4] * ty + e[5] * tz);
     angularVelo.z += dt * (e[6] * tx + e[7] * ty + e[8] * tz);
+
 
     // Use new velocity  - leap frog
     pos.x += (tmpVel.x + velo.x) * 0.5 * dt;
@@ -12030,6 +12065,12 @@ GSSolver.prototype.solve = function(dt,world){
                 deltalambdaTot += deltalambda > 0.0 ? deltalambda : -deltalambda; // abs(deltalambda)
 
                 c.addToWlambda(deltalambda);
+/*
+const len2= ( c.bi.wlambda.x * c.bi.wlambda.x + c.bi.wlambda.y* c.bi.wlambda.y+c.bi.wlambda.z*c.bi.wlambda.z) ;
+if( len2 > 45 ) console.log( "integrate wlamb...", len2 );
+const len23= ( c.bj.wlambda.x * c.bj.wlambda.x + c.bj.wlambda.y* c.bj.wlambda.y+c.bj.wlambda.z*c.bj.wlambda.z) ;
+if( len23 > 45 ) console.log( "integrate wlamb...", len23 );
+*/
             }
 
             // If the total error is small enough - stop iterate
@@ -12049,6 +12090,13 @@ GSSolver.prototype.solve = function(dt,world){
 
             b.wlambda.vmul(b.angularFactor, b.wlambda);
             w.vadd(b.wlambda, w);
+
+/*
+const len23= ( b.wlambda.x * b.wlambda.x + b.wlambda.y* b.wlambda.y+b.wlambda.z*b.wlambda.z) ;
+if( len23 > 45 ) console.log( "integrate wlamb..." );
+const len2= ( w.x * w.x + w.y* w.y+w.z*w.z) ;
+if( len2 > 145 ) console.log( "integrate wlamb...", len23, len2, w, b.wlambda );
+*/
         }
 
         // Set the .multiplier property of each equation
