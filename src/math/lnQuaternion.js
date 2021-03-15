@@ -387,14 +387,15 @@ function zz() {
  * @param {Vec3} target Optional
  * @return {Vec3}
  */
-lnQuaternion.prototype.vmult = function(v,target){
+lnQuaternion.prototype.vmult = function(v,target, dt){
+	dt = dt||1
     target = target || new Vec3();
     var x = v.x,
         y = v.y,
         z = v.z;
 
-		const nst = Math.sin(this.θ/2); // normal * sin_theta
-		const qw = Math.cos(this.θ/2);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
+		const nst = Math.sin(this.θ/2*dt); // normal * sin_theta
+		const qw = Math.cos(this.θ/2*dt);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
 
 		const qx = this.nx*nst;
 		const qy = this.ny*nst;
@@ -600,9 +601,19 @@ lnQuaternion.prototype.slerp = function (toQuat, dt, target) {
 lnQuaternion.prototype.integrate = function(angularVelocity, dt, angularFactor, target){
     target = target || new lnQuaternion();
 
-    target.x = this.x + angularVelocity.x * dt * angularFactor.x;
-    target.y = this.y + angularVelocity.y * dt * angularFactor.y;
-    target.z = this.z + angularVelocity.z * dt * angularFactor.z;
+const thisx = this.x;
+const thisy = this.y;
+const thisz = this.z;
+
+    target.x = angularVelocity.x * dt*angularFactor.x;
+    target.y = angularVelocity.y * dt*angularFactor.y;
+    target.z = angularVelocity.z * dt*angularFactor.z;
+
+	this.vmult( target, target, -0.5 );
+
+	target.x += thisx;
+	target.y += thisy;
+	target.z += thisz;
 
 	target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
 
