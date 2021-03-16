@@ -309,7 +309,7 @@ class Demo extends CANNON.EventTarget {
 
       if (visual.isInstancedMesh) {
         this.dummy.position.copy(position)
-        this.dummy.quaternion.copy(quaternion)
+        quaternion.setQuat( this.dummy.quaternion )
 
         this.dummy.updateMatrix()
 
@@ -317,7 +317,7 @@ class Demo extends CANNON.EventTarget {
         visual.instanceMatrix.needsUpdate = true
       } else {
         visual.position.copy(position)
-        visual.quaternion.copy(quaternion)
+        quaternion.setQuat(visual.quaternion )
       }
     }
 
@@ -443,7 +443,7 @@ class Demo extends CANNON.EventTarget {
 
         const mesh = this.axesMeshCache.request()
         mesh.position.copy(body.position)
-        mesh.quaternion.copy(body.quaternion)
+        body.quaternion.setQuat( mesh.quaternion )
       }
     }
     this.axesMeshCache.hideCached()

@@ -147,7 +147,7 @@ export function bodyToMesh(body, material) {
   const group = new THREE.Group()
 
   group.position.copy(body.position)
-  group.quaternion.copy(body.quaternion)
+  body.quaternion.setQuat( group.quaternion );//.copy()
 
   const meshes = body.shapes.map((shape) => {
     const geometry = shapeToGeometry(shape)
@@ -159,7 +159,7 @@ export function bodyToMesh(body, material) {
     const offset = body.shapeOffsets[i]
     const orientation = body.shapeOrientations[i]
     mesh.position.copy(offset)
-    mesh.quaternion.copy(orientation)
+    orientation.setQuat( mesh.quaternion );//.copy(orientation)
 
     group.add(mesh)
   })

@@ -23,7 +23,6 @@
 
       // The bodies shared with three.js
       const bodies = []
-
       // Setup world
       const world = new CANNON.World()
       world.gravity.set(0, -10, 0)
@@ -33,7 +32,7 @@
       const groundShape = new CANNON.Plane()
       const groundBody = new CANNON.Body({ mass: 0 })
       groundBody.addShape(groundShape)
-      groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
+      groundBody.quaternion.set( -Math.PI/2, 0, 0 );//setFromEuler(-Math.PI / 2, 0, 0)
       world.addBody(groundBody)
 
       // Create N cubes
@@ -62,7 +61,7 @@
           quaternions[i * 4 + 0] = body.quaternion.x
           quaternions[i * 4 + 1] = body.quaternion.y
           quaternions[i * 4 + 2] = body.quaternion.z
-          quaternions[i * 4 + 3] = body.quaternion.w
+          //quaternions[i * 4 + 3] = body.quaternion.w
         }
 
         // Send data back to the main thread
@@ -127,6 +126,7 @@
         )
       }
 
+		const aQuat = new CANNON.Quaternion();
       // The mutated position and quaternion data we
       // get back from the worker
       worker.addEventListener('message', (event) => {
@@ -137,12 +137,17 @@
         // Update the three.js meshes
         for (let i = 0; i < meshes.length; i++) {
           meshes[i].position.set(positions[i * 3 + 0], positions[i * 3 + 1], positions[i * 3 + 2])
+			aQuat.set( quaternions[i * 4 + 0],
+            quaternions[i * 4 + 1],
+            quaternions[i * 4 + 2] ).setQuat( meshes[i].quaternion );
+/*
           meshes[i].quaternion.set(
             quaternions[i * 4 + 0],
             quaternions[i * 4 + 1],
             quaternions[i * 4 + 2],
             quaternions[i * 4 + 3]
           )
+*/
         }
 
         // Delay the next step by the amount of dt remaining,
