@@ -80,7 +80,7 @@
         body1.linearDamping = 0
         const quaternion = new CANNON.Quaternion()
         quaternion.setFromEuler(0, Math.PI * 0.25, 0)
-        body1.quaternion.copy(quaternion)
+        quaternion.setQuat( body1.quaternion )
         world.addBody(body1)
         demo.addVisual(body1)
 
@@ -111,7 +111,7 @@
         const quaternion2 = new CANNON.Quaternion()
         quaternion2.setFromEuler(0, 0, Math.PI * 0.25)
         const quaternion = quaternion1.mult(quaternion2)
-        body1.quaternion.copy(quaternion)
+        quaternion.setQuat( body1.quaternion )
         world.addBody(body1)
         demo.addVisual(body1)
 

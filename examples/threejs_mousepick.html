@@ -41,6 +41,7 @@
       // To be synced
       const meshes = []
       const bodies = []
+		const cubes = [];
 
       initThree()
       initCannon()
@@ -112,6 +113,7 @@
         clickMarker.visible = false // Hide it..
         scene.add(clickMarker)
 
+/*
         // Cube
         const cubeGeometry = new THREE.BoxBufferGeometry(1, 1, 1, 10, 10)
         const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 })
@@ -119,7 +121,7 @@
         cubeMesh.castShadow = true
         meshes.push(cubeMesh)
         scene.add(cubeMesh)
-
+  */
         // Movement plane when dragging
         const planeGeometry = new THREE.PlaneBufferGeometry(100, 100)
         movementPlane = new THREE.Mesh(planeGeometry, floorMaterial)
@@ -148,12 +150,24 @@
         world.addBody(floorBody)
 
         // Cube body
+			for( var i = 0; i < 10; i ++ )  {
         const cubeShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
-        cubeBody = new CANNON.Body({ mass: 5 })
+        cubeBody = new CANNON.Body({ mass: 1000 })
         cubeBody.addShape(cubeShape)
-        cubeBody.position.set(0, 5, 0)
+        cubeBody.position.set(0, 5 + i*2, 0)
+		cubes.push( cubeBody );
         bodies.push(cubeBody)
         world.addBody(cubeBody)
+
+
+        // Cube
+        const cubeGeometry = new THREE.BoxBufferGeometry(1, 1, 1, 10, 10)
+        const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 })
+        cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial)
+        cubeMesh.castShadow = true
+        meshes.push(cubeMesh)
+        scene.add(cubeMesh)
+			}
 
         // Joint body, to later constraint the cube
         const jointShape = new CANNON.Sphere(0.1)
@@ -167,11 +181,13 @@
       window.addEventListener('pointerdown', (event) => {
         // Cast a ray from where the mouse is pointing and
         // see if we hit something
+		let n = 0;
+		for( let cubeMesh of meshes ) {
         const hitPoint = getHitPoint(event.clientX, event.clientY, cubeMesh, camera)
-
+			n++;
         // Return if the cube wasn't hit
         if (!hitPoint) {
-          return
+          continue;
         }
 
         // Move marker mesh on contact point
@@ -181,14 +197,15 @@
         // Move the movement plane on the z-plane of the hit
         moveMovementPlane(hitPoint, camera)
 
+			const cubeBody = cubes[n-1];
         // Create the constraint between the cube body and the joint body
         addJointConstraint(hitPoint, cubeBody)
-
         // Set the flag to trigger pointermove on next frame so the
         // movementPlane has had time to move
         requestAnimationFrame(() => {
           isDragging = true
         })
+          }
       })
 
       window.addEventListener('pointermove', (event) => {
@@ -299,7 +316,7 @@
         // Sync the three.js meshes with the bodies
         for (let i = 0; i !== meshes.length; i++) {
           meshes[i].position.copy(bodies[i].position)
-          meshes[i].quaternion.copy(bodies[i].quaternion)
+          bodies[i].quaternion.setQuat( meshes[i].quaternion )
         }
 
         renderer.render(scene, camera)

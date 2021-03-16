@@ -95,7 +95,7 @@
 
         // Copy coordinates from cannon.js to three.js
         mesh.position.copy(body.position)
-        mesh.quaternion.copy(body.quaternion)
+        body.quaternion.setQuat( mesh.quaternion )
       }
 
       function render() {
