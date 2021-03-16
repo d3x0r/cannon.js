@@ -1,3 +1,5 @@
+import * as config from "./config.json"
+export {config};
 export * from './collision/ObjectCollisionMatrix'
 export * from './collision/AABB'
 export * from './collision/ArrayCollisionMatrix'

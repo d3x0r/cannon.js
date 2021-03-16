@@ -21,6 +21,10 @@ export class Quaternion {
     this.w = w
   }
 
+  /*
+     copy this into another quat - could be a 'get' that returns 'this'
+   */
+  setQuat(q:any):any { q.x = this.x; q.y = this.y; q.z = this.z; q.w = this.w; return q; }
   /**
    * Set the value of the quaternion.
    */
