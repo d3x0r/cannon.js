@@ -1,5 +1,5 @@
 import { Vec3 } from '../math/Vec3'
-import { Quaternion } from '../math/lnQuaternion'
+import { Quaternion } from '../math/Quaternion'
 
 export type TransformOptions = {
   position?: Vec3

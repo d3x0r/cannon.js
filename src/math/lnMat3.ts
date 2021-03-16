@@ -1,5 +1,5 @@
 import { Vec3 } from '../math/Vec3'
-import type { Quaternion } from '../math/lnQuaternion'
+import type { Quaternion } from '../math/Quaternion'
 
 /**
  * A 3x3 matrix.

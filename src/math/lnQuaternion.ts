@@ -118,6 +118,9 @@ toArray (){
     return [this.x, this.y, this.z];
 };
 
+normalizeFast() {
+}
+
 /**
  * Set the quaternion components given an axis and an angle.
  * @method setFromAxisAngle
@@ -158,8 +161,7 @@ setFromAxisAngle (axis:Vec3,angle:number){
  * @param {Vec3} [targetAxis] A vector object to reuse for storing the axis.
  * @return {Array} An array, first elemnt is the axis and the second is the angle in radians.
  */
-toAxisAngle (targetAxis:Vec3):any{
-    targetAxis = targetAxis || new Vec3();
+toAxisAngle (targetAxis = new Vec3()):any{
 	
     targetAxis.x = this.nx; // if it is important that axis is normalised then replace with x=1; y=z=0;
     targetAxis.y = this.ny;
@@ -211,11 +213,9 @@ setFromVectors (u:Vec3,v:Vec3):Quaternion{
  * @param {lnQuaternion} target Optional.
  * @return {lnQuaternion}
  */
-mult (q:Quaternion,target:Quaternion):Quaternion{
+mult (q:Quaternion,target = new Quaternion()):Quaternion{
 	
 	// q= quaternion to rotate; oct = octive to result with; ac/as cos/sin(rotation) ax/ay/az (normalized axis of rotation)
-    target = target || new Quaternion();
-
 	if( q.θ ) {
 		const ax = this.nx, ay = this.ny, az = this.nz, th = this.θ;
 
@@ -300,15 +300,15 @@ inverse (target:Quaternion):Quaternion{
  * @param {lnQuaternion} target
  * @return {lnQuaternion}
  */
-conjugate (target:Quaternion):Quaternion{
-    target = target || new Quaternion();
+conjugate (target = new Quaternion()):Quaternion{
+    target = this;
 	target.nx = -this.nx;
 	target.ny = -this.ny;
 	target.nz = -this.nz;
 	target.x = this.nx * this.θ;
 	target.y = this.ny * this.θ;
 	target.z = this.nz * this.θ;
-	target.θ = this.θ;
+//	target.θ = this.θ;
 	return target;
 };
 
@@ -334,9 +334,8 @@ normalize ():Quaternion{
  * @param {Vec3} target Optional
  * @return {Vec3}
  */
-vmult (v:Vec3,target:Vec3, dt?:any):Vec3{
+vmult (v:Vec3,target = new Vec3(), dt?:any):Vec3{
 	dt = dt||1
-    target = target || new Vec3();
     const x = v.x,
         y = v.y,
         z = v.z;
@@ -518,9 +517,8 @@ clone ():Quaternion{
  * @param {lnQuaternion} [target] A quaternion to store the result in. If not provided, a new one will be created.
  * @returns {lnQuaternion} The "target" object
  */
-slerp  (toQuat:Quaternion, dt:number, target:Quaternion):Quaternion {
+slerp  (toQuat:Quaternion, dt:number, target = new Quaternion()):Quaternion {
 	
-	target = target || new Quaternion();
 	target.x = this.x * (1-dt) + toQuat.x * dt;
 	target.y = this.y * (1-dt) + toQuat.y * dt;
 	target.z = this.z * (1-dt) + toQuat.z * dt;
@@ -545,8 +543,7 @@ slerp  (toQuat:Quaternion, dt:number, target:Quaternion):Quaternion {
  * @param  {lnQuaternion} target
  * @return {lnQuaternion} The "target" object
  */
-integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target:Quaternion):Quaternion{
-    target = target || new Quaternion();
+integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Quaternion()):Quaternion{
 
 if(0) {
 	// attempt convert to quaternions, do the math, and reverse (fails)
