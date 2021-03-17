@@ -551,7 +551,10 @@ if(0)
 		integrateTempAVQ.x = angularFactor.x * dt * angularFactor.x;
 		integrateTempAVQ.y = angularFactor.y * dt * angularFactor.y;
 		integrateTempAVQ.z = angularFactor.z * dt * angularFactor.z;
-		integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x+integrateTempAVQ.y*integrateTempAVQ.y+integrateTempAVQ.z*integrateTempAVQ.z);
+		integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x
+			+integrateTempAVQ.y*integrateTempAVQ.y
+			+integrateTempAVQ.z*integrateTempAVQ.z );
+			
 		if( integrateTempAVQ.θ ) {
 			integrateTempAVQ.nx = integrateTempAVQ.x / integrateTempAVQ.θ;
 			integrateTempAVQ.ny = integrateTempAVQ.y / integrateTempAVQ.θ;
@@ -562,7 +565,7 @@ if(0)
 			integrateTempAVQ.nz = 0;
 		}
 		const step = 1/10;
-		target.copy( this );
+		//target.copy( this );
 		for( let t = 0; t < 1.0; t+=step ) {
 			target.mult( integrateTempAVQ,  integrateTempAVQ2, -1 );
 			target.x += integrateTempAVQ2.x*step;
