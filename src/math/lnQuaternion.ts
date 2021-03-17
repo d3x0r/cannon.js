@@ -545,12 +545,15 @@ slerp  (toQuat:Quaternion, dt:number, target = new Quaternion()):Quaternion {
  * @return {lnQuaternion} The "target" object
  */
 integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Quaternion()):Quaternion{
-if(0)
+	if(0)
 	{
-	
-		integrateTempAVQ.x = angularFactor.x * dt * angularFactor.x;
-		integrateTempAVQ.y = angularFactor.y * dt * angularFactor.y;
-		integrateTempAVQ.z = angularFactor.z * dt * angularFactor.z;
+		const tx = this.x;
+		const ty = this.y;
+		const tz = this.z;
+		integrateTempAVQ.x = angularVelocity.x * dt * angularFactor.x;
+		integrateTempAVQ.y = angularVelocity.y * dt * angularFactor.y;
+		integrateTempAVQ.z = angularVelocity.z * dt * angularFactor.z;
+
 		integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x
 			+integrateTempAVQ.y*integrateTempAVQ.y
 			+integrateTempAVQ.z*integrateTempAVQ.z );
@@ -564,10 +567,34 @@ if(0)
 			integrateTempAVQ.ny = 1;
 			integrateTempAVQ.nz = 0;
 		}
+	/*
+		this.mult( integrateTempAVQ, target, -0.5 ); // rotate into body space... 
+		target.x += tx;
+		target.y += ty;
+		target.z += tz;
+		target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
+		if( target.θ ) {
+			target.nx = target.x / target.θ;
+			target.ny = target.y / target.θ;
+			target.nz = target.z / target.θ;
+			// normalize fast.
+			if( target.θ > Math.PI*2 )  { // 0 to 2pi
+				target.θ %= Math.PI*2;
+				target.x = target.nx * target.θ;
+				target.y = target.ny * target.θ;
+				target.z = target.nz * target.θ;
+			}
+		}else {
+			target.nx = 0;
+			target.ny = 1;
+			target.nz = 0;
+		}
+		return target;
+	*/
+		// try to make multiple steps...
 		const step = 1/10;
-		//target.copy( this );
 		for( let t = 0; t < 1.0; t+=step ) {
-			target.mult( integrateTempAVQ,  integrateTempAVQ2, -1 );
+			target.mult( integrateTempAVQ,  integrateTempAVQ2, -1*step );
 			target.x += integrateTempAVQ2.x*step;
 			target.y += integrateTempAVQ2.y*step;
 			target.z += integrateTempAVQ2.z*step;
@@ -629,40 +656,74 @@ if(0) {
 }
 
 
+	if( 1) {
+		// most working for boxes settling on plane
+		// point-to-point constraint gains momentum over time.
+		const thisx = this.x;
+		const thisy = this.y;
+		const thisz = this.z;
+		
+		integrateTempAV.x = angularVelocity.x *dt*angularFactor.x;
+		integrateTempAV.y = angularVelocity.y *dt*angularFactor.y;
+		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
 
-const thisx = this.x;
-const thisy = this.y;
-const thisz = this.z;
-	
-    integrateTempAV.x = angularVelocity.x *dt*angularFactor.x;
-    integrateTempAV.y = angularVelocity.y *dt*angularFactor.y;
-    integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
+		this.vmult( integrateTempAV, integrateTempAV, -0.5 );
 
-	this.vmult( integrateTempAV, integrateTempAV, -0.5 );
+		target.x = integrateTempAV.x + thisx;
+		target.y = integrateTempAV.y + thisy;
+		target.z = integrateTempAV.z + thisz;
 
-	target.x = integrateTempAV.x + thisx;
-	target.y = integrateTempAV.y + thisy;
-	target.z = integrateTempAV.z + thisz;
+		target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
 
-	target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
-
-	if( target.θ ) {
-		target.nx = target.x / target.θ;
-		target.ny = target.y / target.θ;
-		target.nz = target.z / target.θ;
-		// normalize fast.
-		if( target.θ > Math.PI*2 )  { // 0 to 2pi
-			target.θ %= Math.PI*2;
-			target.x = target.nx * target.θ;
-			target.y = target.ny * target.θ;
-			target.z = target.nz * target.θ;
+		if( target.θ ) {
+			target.nx = target.x / target.θ;
+			target.ny = target.y / target.θ;
+			target.nz = target.z / target.θ;
+			// normalize fast.
+			if( target.θ > Math.PI*2 )  { // 0 to 2pi
+				target.θ %= Math.PI*2;
+				target.x = target.nx * target.θ;
+				target.y = target.ny * target.θ;
+				target.z = target.nz * target.θ;
+			}
+		}else {
+			target.nx = 0;
+			target.ny = 1;
+			target.nz = 0;
 		}
-	}else {
-		target.nx = 0;
-		target.ny = 1;
-		target.nz = 0;
+		return target;
 	}
-    return target;
+
+	if(0) {
+        // simplest, most direct idea (fails for idle boxes on the plane)
+		const thisx = this.x;
+		const thisy = this.y;
+		const thisz = this.z;
+		
+		target.x = this.x + angularVelocity.x *dt*angularFactor.x;
+		target.y = this.y + angularVelocity.y *dt*angularFactor.y;
+		target.z = this.z + angularVelocity.z *dt*angularFactor.z;
+
+		target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
+
+		if( target.θ ) {
+			target.nx = target.x / target.θ;
+			target.ny = target.y / target.θ;
+			target.nz = target.z / target.θ;
+			// normalize fast.
+			if( target.θ > Math.PI*2 )  { // 0 to 2pi
+				target.θ %= Math.PI*2;
+				target.x = target.nx * target.θ;
+				target.y = target.ny * target.θ;
+				target.z = target.nz * target.θ;
+			}
+		}else {
+			target.nx = 0;
+			target.ny = 1;
+			target.nz = 0;
+		}
+	}
+	return target;
 };
 
 }
