@@ -208,16 +208,17 @@ setFromVectors (u:Vec3,v:Vec3):Quaternion{
 
 /**
  * lnQuaternion multiplication
+ * rotates input Q around this, fills in target (which may be Q or this)
  * @method mult
  * @param {lnQuaternion} q
  * @param {lnQuaternion} target Optional.
  * @return {lnQuaternion}
  */
-mult (q:Quaternion,target = new Quaternion()):Quaternion{
+mult (q:Quaternion,target = new Quaternion(), dt=1):Quaternion{
 	
 	// q= quaternion to rotate; oct = octive to result with; ac/as cos/sin(rotation) ax/ay/az (normalized axis of rotation)
 	if( q.θ ) {
-		const ax = this.nx, ay = this.ny, az = this.nz, th = this.θ;
+		const ax = this.nx, ay = this.ny, az = this.nz, th = this.θ*dt;
 
 		const AdotB = (q.nx*ax + q.ny*ay + q.nz*az);
 	   
@@ -544,8 +545,44 @@ slerp  (toQuat:Quaternion, dt:number, target = new Quaternion()):Quaternion {
  * @return {lnQuaternion} The "target" object
  */
 integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Quaternion()):Quaternion{
+if(0)
+	{
+	
+		integrateTempAVQ.x = angularFactor.x * dt * angularFactor.x;
+		integrateTempAVQ.y = angularFactor.y * dt * angularFactor.y;
+		integrateTempAVQ.z = angularFactor.z * dt * angularFactor.z;
+		integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x+integrateTempAVQ.y*integrateTempAVQ.y+integrateTempAVQ.z*integrateTempAVQ.z);
+		if( integrateTempAVQ.θ ) {
+			integrateTempAVQ.nx = integrateTempAVQ.x / integrateTempAVQ.θ;
+			integrateTempAVQ.ny = integrateTempAVQ.y / integrateTempAVQ.θ;
+			integrateTempAVQ.nz = integrateTempAVQ.z / integrateTempAVQ.θ;
+		}else {
+			integrateTempAVQ.nx = 0;
+			integrateTempAVQ.ny = 1;
+			integrateTempAVQ.nz = 0;
+		}
+		const step = 1/10;
+		target.copy( this );
+		for( let t = 0; t < 1.0; t+=step ) {
+			target.mult( integrateTempAVQ,  integrateTempAVQ2, -1 );
+			target.x += integrateTempAVQ2.x*step;
+			target.y += integrateTempAVQ2.y*step;
+			target.z += integrateTempAVQ2.z*step;
+			target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
+
+			if( target.θ ) {
+				target.nx = target.x / target.θ;
+				target.ny = target.y / target.θ;
+				target.nz = target.z / target.θ;
+			}
+		}
+	
+		return target;
+	}
+
 
 if(0) {
+
 	// attempt convert to quaternions, do the math, and reverse (fails)
 	const s = Math.sin(this.θ/2);
     var ax = angularVelocity.x * angularFactor.x,
@@ -557,23 +594,22 @@ if(0) {
         bw = Math.cos( this.θ/2);
 
 	const ts = Math.sin(target.θ/2);
+	// target is assumed to already be valid... this is adding to target.
 	var tx = target.nx * ts;
 	var ty = target.ny * ts;
 	var tz = target.nz * ts;
-	var tw = Math.cos(target.θ/2);
+	//var tw = Math.cos(target.θ/2);   // not used in output
 
     var half_dt = dt * 0.5;
 
     tx += half_dt * (ax * bw + ay * bz - az * by);
     ty += half_dt * (ay * bw + az * bx - ax * bz);
     tz += half_dt * (az * bw + ax * by - ay * bx);
-    tw += half_dt * (- ax * bx - ay * by - az * bz);
-		const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
-
-
-	target.θ = Math.asin(len)*2;
-	//const newSin = Math.sin( target.θ/2);
-	if( len ) {
+    //tw += half_dt * (- ax * bx - ay * by - az * bz);   // not used in output
+	const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
+	// length may be greater than 1; and sin returns NaN for len>1
+	target.θ = Math.asin(( len > 1 ) ?1:len)*2;
+	if( target.θ ) {
 		target.nx = tx / len;
 		target.ny = ty / len;
 		target.nz = tz / len;
@@ -627,3 +663,6 @@ const thisz = this.z;
 };
 
 }
+
+const integrateTempAVQ = new Quaternion();
+const integrateTempAVQ2 = new Quaternion();
