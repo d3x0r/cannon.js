@@ -220,8 +220,8 @@ mult (q:Quaternion,target = new Quaternion(), dt=1):Quaternion{
 	// q= quaternion to rotate; oct = octive to result with; ac/as cos/sin(rotation) ax/ay/az (normalized axis of rotation)
 	if( q.θ ) {
 		const ax = this.nx, ay = this.ny, az = this.nz, th = this.θ*dt;
-
-		const AdotB = (q.nx*ax + q.ny*ay + q.nz*az);
+		const qx = q.nx, qy = q.ny, qz = q.nz;
+		const AdotB = (qx*ax + qy*ay + qz*az);
 	   
 		const xmy = (th - q.θ)/2; // X - Y  (x minus y)
 		const xpy = (th + q.θ)/2  // X + Y  (x plus y )
@@ -239,14 +239,12 @@ mult (q:Quaternion,target = new Quaternion(), dt=1):Quaternion{
 			const ss2 = sxpy - sxmy
 			const cc1 = cxmy - cxpy
 	   
-			const sAng = Math.sin(ang/2);
-	   
-			const crsX = (ay*q.nz-az*q.ny);
-			const Cx = ( crsX * cc1 +  ax * ss1 + q.nx * ss2 );
-			const crsY = (az*q.nx-ax*q.nz);
-			const Cy = ( crsY * cc1 +  ay * ss1 + q.ny * ss2 );
-			const crsZ = (ax*q.ny-ay*q.nx);
-			const Cz = ( crsZ * cc1 +  az * ss1 + q.nz * ss2 );
+			const crsX = (ay*qz-az*qy);
+			const Cx = ( crsX * cc1 +  ax * ss1 + qx * ss2 );
+			const crsY = (az*qx-ax*qz);
+			const Cy = ( crsY * cc1 +  ay * ss1 + qy * ss2 );
+			const crsZ = (ax*qy-ay*qx);
+			const Cz = ( crsZ * cc1 +  az * ss1 + qz * ss2 );
 
 			const Clx = 1/Math.sqrt(Cx*Cx+Cy*Cy+Cz*Cz);
 	   
@@ -338,27 +336,24 @@ normalize ():Quaternion{
  */
 vmult (v:Vec3,target = new Vec3(), dt?:any):Vec3{
 	dt = dt||1
-    const x = v.x,
-        y = v.y,
-        z = v.z;
+	const c = Math.cos(this.θ*dt);//
+	const s = Math.sin(this.θ*dt);//
 
-		const nst = Math.sin(this.θ/2*dt); // normal * sin_theta
-		const qw = Math.cos(this.θ/2*dt);  //Math.cos( pl );   quaternion q.w  = (exp(lnQ)) [ *exp(lnQ.W=0) ]
+	const qx = this.nx, qy = this.ny, qz = this.nz;
+	const vx = v.x , vy = v.y , vz = v.z;
+	// sin theta * cross
+	// 19 mult 12 add
+	const cx =  s*(qy * vz - qz * vy);
+	const cy =  s*(qz * vx - qx * vz);
+	const cz =  s*(qx * vy - qy * vx);
+	// (1-cos theta) * dot
+	const dot =  (1-c)*((qx * vx ) + (qy*vy)+(qz*vz));
+	// v *cos(theta) + cross*sin(theta) + this * dot * (1-c)
+	target.x = vx*c + cx + qx * dot;
+	target.y = vy*c + cy + qy * dot
+	target.z = vz*c + cz + qz * dot;
 
-		const qx = this.nx*nst;
-		const qy = this.ny*nst;
-		const qz = this.nz*nst;
-
-		//p┬Æ = (v*v.dot(p) + v.cross(p)*(w))*2 + p*(w*w ┬û v.dot(v))
-		const tx = 2 * (qy * z - qz * y); // v.cross(p)*w*2
-		const ty = 2 * (qz * x - qx * z);
-		const tz = 2 * (qx * y - qy * x);
-		target.x = x + qw * tx + ( qy * tz - ty * qz );
-		target.y = y + qw * ty + ( qz * tx - tz * qx );
-		target.z = z + qw * tz + ( qx * ty - tx * qy );
-
-		return target;	
-
+	return target;	
 };
 
 /**
@@ -549,8 +544,10 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 	if(0)
 	{
 		// try to make multiple steps...
-		const step = 1/100;
+		const step = 1/20;
+		
 		if( target != this ) {
+			// innitialize target to this.
 			target.x = this.x;
 			target.y = this.y;
 			target.z = this.z;
@@ -559,11 +556,16 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 			target.nz = this.nz;
 			target.θ = this.θ;
 		}
+		
 		integrateTempAV.x = angularVelocity.x *dt*angularFactor.x;
 		integrateTempAV.y = angularVelocity.y *dt*angularFactor.y;
 		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
+		const len = Math.sqrt(integrateTempAV.x*integrateTempAV.x+integrateTempAV.y*integrateTempAV.y+integrateTempAV.z*integrateTempAV.z);
+		// length of this vector is already scaled by dt... 
 		for( let t = 0; t < 1; t+=step ) {
 			target.vmult( integrateTempAV, integrateTempAV2, -1 );
+			
+			/*
 			target.x += integrateTempAV2.x*step;
 			target.y += integrateTempAV2.y*step;
 			target.z += integrateTempAV2.z*step;
@@ -573,6 +575,21 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 				target.ny = target.y / target.θ;
 				target.nz = target.z / target.θ;
 			}
+			*/
+			
+			integrateTempAVQ.x = integrateTempAV2.x;
+			integrateTempAVQ.y = integrateTempAV2.y;
+			integrateTempAVQ.z = integrateTempAV2.z;
+			integrateTempAVQ.θ = len;
+			if( len ) {
+				integrateTempAVQ.nx = integrateTempAVQ.x / integrateTempAVQ.θ;
+				integrateTempAVQ.ny = integrateTempAVQ.y / integrateTempAVQ.θ;
+				integrateTempAVQ.nz = integrateTempAVQ.z / integrateTempAVQ.θ;
+			}
+
+			// step target by the updated axis-angle rotation... 
+			integrateTempAVQ.mult( target, target, step );
+			
 		}
 	
 		return target;
@@ -590,7 +607,33 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
 
 		this.vmult( integrateTempAV, integrateTempAV, -0.5 );
-		
+		if( 1 ) {			
+			target.x = integrateTempAV.x + thisx;
+			target.y = integrateTempAV.y + thisy;
+			target.z = integrateTempAV.z + thisz;
+
+			target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
+
+			if( target.θ ) {
+				target.nx = target.x / target.θ;
+				target.ny = target.y / target.θ;
+				target.nz = target.z / target.θ;
+				// normalize fast.
+				if( target.θ > Math.PI*4 )  { // 0 to 2pi
+					target.θ %= Math.PI*4;
+					target.x = target.nx * target.θ;
+					target.y = target.ny * target.θ;
+					target.z = target.nz * target.θ;
+				}
+			}else {
+				target.nx = 0;
+				target.ny = 1;
+				target.nz = 0;
+			}
+		}	
+		return target;
+
+
 		if( 0 ) {
 			// convert vector to a rotation vector, then rotate
 			// 'this' by that.
@@ -612,31 +655,6 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 			}
 			integrateTempAVQ.mult( this, target );
 		}
-		if( 1 ) {			
-			target.x = integrateTempAV.x + thisx;
-			target.y = integrateTempAV.y + thisy;
-			target.z = integrateTempAV.z + thisz;
-
-			target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
-
-			if( target.θ ) {
-				target.nx = target.x / target.θ;
-				target.ny = target.y / target.θ;
-				target.nz = target.z / target.θ;
-				// normalize fast.
-				if( target.θ > Math.PI*2 )  { // 0 to 2pi
-					target.θ %= Math.PI*2;
-					target.x = target.nx * target.θ;
-					target.y = target.ny * target.θ;
-					target.z = target.nz * target.θ;
-				}
-			}else {
-				target.nx = 0;
-				target.ny = 1;
-				target.nz = 0;
-			}
-		}	
-		return target;
 	}
 
 
