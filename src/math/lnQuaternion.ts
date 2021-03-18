@@ -25,6 +25,7 @@ const lnQuaternion_mult_va = new Vec3();
 const lnQuaternion_mult_vb = new Vec3();
 const lnQuaternion_mult_vaxvb = new Vec3();
 const integrateTempAV = new Vec3();
+const integrateTempAV2 = new Vec3();
 
 export class Quaternion{
 	// axis/angle
@@ -547,59 +548,26 @@ slerp  (toQuat:Quaternion, dt:number, target = new Quaternion()):Quaternion {
 integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Quaternion()):Quaternion{
 	if(0)
 	{
-		const tx = this.x;
-		const ty = this.y;
-		const tz = this.z;
-		integrateTempAVQ.x = angularVelocity.x * dt * angularFactor.x;
-		integrateTempAVQ.y = angularVelocity.y * dt * angularFactor.y;
-		integrateTempAVQ.z = angularVelocity.z * dt * angularFactor.z;
-
-		integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x
-			+integrateTempAVQ.y*integrateTempAVQ.y
-			+integrateTempAVQ.z*integrateTempAVQ.z );
-			
-		if( integrateTempAVQ.θ ) {
-			integrateTempAVQ.nx = integrateTempAVQ.x / integrateTempAVQ.θ;
-			integrateTempAVQ.ny = integrateTempAVQ.y / integrateTempAVQ.θ;
-			integrateTempAVQ.nz = integrateTempAVQ.z / integrateTempAVQ.θ;
-		}else {
-			integrateTempAVQ.nx = 0;
-			integrateTempAVQ.ny = 1;
-			integrateTempAVQ.nz = 0;
-		}
-	/*
-		this.mult( integrateTempAVQ, target, -0.5 ); // rotate into body space... 
-		target.x += tx;
-		target.y += ty;
-		target.z += tz;
-		target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
-		if( target.θ ) {
-			target.nx = target.x / target.θ;
-			target.ny = target.y / target.θ;
-			target.nz = target.z / target.θ;
-			// normalize fast.
-			if( target.θ > Math.PI*2 )  { // 0 to 2pi
-				target.θ %= Math.PI*2;
-				target.x = target.nx * target.θ;
-				target.y = target.ny * target.θ;
-				target.z = target.nz * target.θ;
-			}
-		}else {
-			target.nx = 0;
-			target.ny = 1;
-			target.nz = 0;
-		}
-		return target;
-	*/
 		// try to make multiple steps...
-		const step = 1/10;
-		for( let t = 0; t < 1.0; t+=step ) {
-			target.mult( integrateTempAVQ,  integrateTempAVQ2, -1*step );
-			target.x += integrateTempAVQ2.x*step;
-			target.y += integrateTempAVQ2.y*step;
-			target.z += integrateTempAVQ2.z*step;
+		const step = 1/100;
+		if( target != this ) {
+			target.x = this.x;
+			target.y = this.y;
+			target.z = this.z;
+			target.nx = this.nx;
+			target.ny = this.ny;
+			target.nz = this.nz;
+			target.θ = this.θ;
+		}
+		integrateTempAV.x = angularVelocity.x *dt*angularFactor.x;
+		integrateTempAV.y = angularVelocity.y *dt*angularFactor.y;
+		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
+		for( let t = 0; t < 1; t+=step ) {
+			target.vmult( integrateTempAV, integrateTempAV2, -1 );
+			target.x += integrateTempAV2.x*step;
+			target.y += integrateTempAV2.y*step;
+			target.z += integrateTempAV2.z*step;
 			target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
-
 			if( target.θ ) {
 				target.nx = target.x / target.θ;
 				target.ny = target.y / target.θ;
@@ -609,52 +577,6 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 	
 		return target;
 	}
-
-
-if(0) {
-
-	// attempt convert to quaternions, do the math, and reverse (fails)
-	const s = Math.sin(this.θ/2);
-    var ax = angularVelocity.x * angularFactor.x,
-        ay = angularVelocity.y * angularFactor.y,
-        az = angularVelocity.z * angularFactor.z,
-        bx = this.nx * s,
-        by = this.ny * s,
-        bz = this.nz * s,
-        bw = Math.cos( this.θ/2);
-
-	const ts = Math.sin(target.θ/2);
-	// target is assumed to already be valid... this is adding to target.
-	var tx = target.nx * ts;
-	var ty = target.ny * ts;
-	var tz = target.nz * ts;
-	//var tw = Math.cos(target.θ/2);   // not used in output
-
-    var half_dt = dt * 0.5;
-
-    tx += half_dt * (ax * bw + ay * bz - az * by);
-    ty += half_dt * (ay * bw + az * bx - ax * bz);
-    tz += half_dt * (az * bw + ax * by - ay * bx);
-    //tw += half_dt * (- ax * bx - ay * by - az * bz);   // not used in output
-	const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
-	// length may be greater than 1; and sin returns NaN for len>1
-	target.θ = Math.asin(( len > 1 ) ?1:len)*2;
-	if( target.θ ) {
-		target.nx = tx / len;
-		target.ny = ty / len;
-		target.nz = tz / len;
-	}else {
-		target.nx = 0;
-		target.ny = 0;
-		target.nz = 1;
-	}
-	target.x = target.nx * 	target.θ;
-	target.y = target.ny * 	target.θ;
-	target.z = target.nz * 	target.θ;
-
-    return target;
-}
-
 
 	if( 1) {
 		// most working for boxes settling on plane
@@ -668,6 +590,7 @@ if(0) {
 		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
 
 		this.vmult( integrateTempAV, integrateTempAV, -0.5 );
+		
 		if( 0 ) {
 			// convert vector to a rotation vector, then rotate
 			// 'this' by that.
@@ -713,6 +636,52 @@ if(0) {
 				target.nz = 0;
 			}
 		}	
+		return target;
+	}
+
+
+
+	if(0) {
+
+		// attempt convert to quaternions, do the math, and reverse (fails)
+		const s = Math.sin(this.θ/2);
+		var ax = angularVelocity.x * angularFactor.x,
+			ay = angularVelocity.y * angularFactor.y,
+			az = angularVelocity.z * angularFactor.z,
+			bx = this.nx * s,
+			by = this.ny * s,
+			bz = this.nz * s,
+			bw = Math.cos( this.θ/2);
+
+		const ts = Math.sin(target.θ/2);
+		// target is assumed to already be valid... this is adding to target.
+		var tx = target.nx * ts;
+		var ty = target.ny * ts;
+		var tz = target.nz * ts;
+		//var tw = Math.cos(target.θ/2);   // not used in output
+
+		var half_dt = dt * 0.5;
+
+		tx += half_dt * (ax * bw + ay * bz - az * by);
+		ty += half_dt * (ay * bw + az * bx - ax * bz);
+		tz += half_dt * (az * bw + ax * by - ay * bx);
+		//tw += half_dt * (- ax * bx - ay * by - az * bz);   // not used in output
+		const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
+		// length may be greater than 1; and sin returns NaN for len>1
+		target.θ = Math.asin(( len > 1 ) ?1:len)*2;
+		if( target.θ ) {
+			target.nx = tx / len;
+			target.ny = ty / len;
+			target.nz = tz / len;
+		}else {
+			target.nx = 0;
+			target.ny = 0;
+			target.nz = 1;
+		}
+		target.x = target.nx * 	target.θ;
+		target.y = target.ny * 	target.θ;
+		target.z = target.nz * 	target.θ;
+
 		return target;
 	}
 
