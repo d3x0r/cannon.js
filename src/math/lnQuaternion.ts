@@ -668,29 +668,51 @@ if(0) {
 		integrateTempAV.z = angularVelocity.z *dt*angularFactor.z;
 
 		this.vmult( integrateTempAV, integrateTempAV, -0.5 );
-
-		target.x = integrateTempAV.x + thisx;
-		target.y = integrateTempAV.y + thisy;
-		target.z = integrateTempAV.z + thisz;
-
-		target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
-
-		if( target.θ ) {
-			target.nx = target.x / target.θ;
-			target.ny = target.y / target.θ;
-			target.nz = target.z / target.θ;
-			// normalize fast.
-			if( target.θ > Math.PI*2 )  { // 0 to 2pi
-				target.θ %= Math.PI*2;
-				target.x = target.nx * target.θ;
-				target.y = target.ny * target.θ;
-				target.z = target.nz * target.θ;
+		if( 0 ) {
+			// convert vector to a rotation vector, then rotate
+			// 'this' by that.
+			integrateTempAVQ.x = integrateTempAV.x
+			integrateTempAVQ.y = integrateTempAV.y
+			integrateTempAVQ.z = integrateTempAV.z
+			integrateTempAVQ.θ = Math.sqrt(integrateTempAVQ.x*integrateTempAVQ.x
+				+integrateTempAVQ.y*integrateTempAVQ.y
+				+integrateTempAVQ.z*integrateTempAVQ.z);
+			if( integrateTempAVQ.θ) {
+				integrateTempAVQ.nx =integrateTempAV.x / integrateTempAVQ.θ;
+				integrateTempAVQ.ny =integrateTempAV.y / integrateTempAVQ.θ;
+				integrateTempAVQ.nz =integrateTempAV.z / integrateTempAVQ.θ;
+			}else {
+				integrateTempAVQ.nx =0;
+				integrateTempAVQ.ny =0;
+				integrateTempAVQ.nz =1;
+	
 			}
-		}else {
-			target.nx = 0;
-			target.ny = 1;
-			target.nz = 0;
+			integrateTempAVQ.mult( this, target );
 		}
+		if( 1 ) {			
+			target.x = integrateTempAV.x + thisx;
+			target.y = integrateTempAV.y + thisy;
+			target.z = integrateTempAV.z + thisz;
+
+			target.θ = Math.sqrt(target.x*target.x+target.y*target.y+target.z*target.z);
+
+			if( target.θ ) {
+				target.nx = target.x / target.θ;
+				target.ny = target.y / target.θ;
+				target.nz = target.z / target.θ;
+				// normalize fast.
+				if( target.θ > Math.PI*2 )  { // 0 to 2pi
+					target.θ %= Math.PI*2;
+					target.x = target.nx * target.θ;
+					target.y = target.ny * target.θ;
+					target.z = target.nz * target.θ;
+				}
+			}else {
+				target.nx = 0;
+				target.ny = 1;
+				target.nz = 0;
+			}
+		}	
 		return target;
 	}
 
