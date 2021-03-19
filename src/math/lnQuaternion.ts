@@ -541,6 +541,58 @@ slerp  (toQuat:Quaternion, dt:number, target = new Quaternion()):Quaternion {
  * @return {lnQuaternion} The "target" object
  */
 integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Quaternion()):Quaternion{
+	if(1) {
+
+		// attempt convert to quaternions, do the math, and reverse (fails)
+		const s = Math.sin(this.θ/2);
+		var ax = angularVelocity.x * angularFactor.x,
+			ay = angularVelocity.y * angularFactor.y,
+			az = angularVelocity.z * angularFactor.z,
+			bx = this.nx * s,
+			by = this.ny * s,
+			bz = this.nz * s,
+			bw = Math.cos( this.θ/2);
+
+		const ts = Math.sin(target.θ/2);
+		// target is assumed to already be valid... this is adding to target.
+		var tx = target.nx * ts;
+		var ty = target.ny * ts;
+		var tz = target.nz * ts;
+		var tw = Math.cos(target.θ/2);   // not used in output
+
+		var half_dt = dt * 0.5;
+
+		tx += half_dt * (ax * bw + ay * bz - az * by);
+		ty += half_dt * (ay * bw + az * bx - ax * bz);
+		tz += half_dt * (az * bw + ax * by - ay * bx);
+		tw += half_dt * (- ax * bx - ay * by - az * bz);   // not used in output
+		const qlen = Math.sqrt(tw*tw+tx*tx+ty*ty+tz*tz);
+		if( qlen ) {
+			tw /= qlen;
+			tx /= qlen;
+			ty /= qlen;
+			tz /= qlen;
+		}
+		const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
+		// length may be greater than 1; and sin returns NaN for len>1
+		if( len ) {
+			target.θ = Math.asin( len)*2;
+			target.nx = tx / len;
+			target.ny = ty / len;
+			target.nz = tz / len;
+		}else {
+			target.nx = 0;
+			target.ny = 0;
+			target.nz = 1;
+		}
+
+		target.x = target.nx * 	target.θ;
+		target.y = target.ny * 	target.θ;
+		target.z = target.nz * 	target.θ;
+
+		return target;
+	}
+
 	if(0)
 	{
 		// try to make multiple steps...
@@ -659,49 +711,6 @@ integrate (angularVelocity:Vec3, dt:number, angularFactor:Vec3, target = new Qua
 
 
 
-	if(0) {
-
-		// attempt convert to quaternions, do the math, and reverse (fails)
-		const s = Math.sin(this.θ/2);
-		var ax = angularVelocity.x * angularFactor.x,
-			ay = angularVelocity.y * angularFactor.y,
-			az = angularVelocity.z * angularFactor.z,
-			bx = this.nx * s,
-			by = this.ny * s,
-			bz = this.nz * s,
-			bw = Math.cos( this.θ/2);
-
-		const ts = Math.sin(target.θ/2);
-		// target is assumed to already be valid... this is adding to target.
-		var tx = target.nx * ts;
-		var ty = target.ny * ts;
-		var tz = target.nz * ts;
-		//var tw = Math.cos(target.θ/2);   // not used in output
-
-		var half_dt = dt * 0.5;
-
-		tx += half_dt * (ax * bw + ay * bz - az * by);
-		ty += half_dt * (ay * bw + az * bx - ax * bz);
-		tz += half_dt * (az * bw + ax * by - ay * bx);
-		//tw += half_dt * (- ax * bx - ay * by - az * bz);   // not used in output
-		const len = Math.sqrt(tx*tx+ty*ty+tz*tz);
-		// length may be greater than 1; and sin returns NaN for len>1
-		target.θ = Math.asin(( len > 1 ) ?1:len)*2;
-		if( target.θ ) {
-			target.nx = tx / len;
-			target.ny = ty / len;
-			target.nz = tz / len;
-		}else {
-			target.nx = 0;
-			target.ny = 0;
-			target.nz = 1;
-		}
-		target.x = target.nx * 	target.θ;
-		target.y = target.ny * 	target.θ;
-		target.z = target.nz * 	target.θ;
-
-		return target;
-	}
 
 	if(0) {
         // simplest, most direct idea (fails for idle boxes on the plane)
